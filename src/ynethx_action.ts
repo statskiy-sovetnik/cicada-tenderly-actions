@@ -33,14 +33,19 @@ export const actionFn: ActionFn = async (context: Context, event: Event) => {
   // Read the buffer maxWithdraw balance
   const maxWithdraw = await EulerBuffer.maxWithdraw(vaultAddress);
   if (maxWithdraw < WITHDRAW_AMOUNT) {
-    return; // Not enough funds to withdraw
+    throw new Error("Not enough funds in buffer to withdraw");
   }
 
-  // Withdraw funds from the vault
-
+  // Create a wallet instance
   const wallet = new ethers.Wallet(walletPk ?? "", provider);
   const wallet_address = await wallet.getAddress();
   const ynETHXWithSigner = ynETHX.connect(wallet);
+
+  // Check that wallet has enough ynETHx balance
+  const balance = await ynETHX.balanceOf(wallet_address);
+  if (balance < WITHDRAW_AMOUNT) {
+    throw new Error("Not enough ynETHx balance to withdraw");
+  }
 
   // Withdraw 20 ETH to the wallet address
   const tx = await ynETHXWithSigner.withdraw(
