@@ -1,4 +1,4 @@
-import type { HardhatUserConfig } from "hardhat/config";
+import { configVariable, type HardhatUserConfig } from "hardhat/config";
 
 import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
 
@@ -9,15 +9,26 @@ const config: HardhatUserConfig = {
       type: "edr-simulated",
       chainType: "l1",
       forking: {
-        url: "https://mainnet.infura.io/v3/4161a0b9d7f44716a5699a9e91be996a",
+        url: configVariable("MAINNET_RPC_URL"),
         blockNumber: 23309842
       },
+    },
+    mainnet: {
+      type: "http",
+      url: configVariable("MAINNET_RPC_URL"),
+      chainType: "l1",
     },
     hardhatOp: {
       type: "edr-simulated",
       chainType: "op",
     },
   },
+
+  test: {
+    mocha: {
+      timeout: 200000,
+    }
+  }
 };
 
 export default config;

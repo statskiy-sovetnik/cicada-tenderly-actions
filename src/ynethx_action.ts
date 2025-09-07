@@ -4,11 +4,12 @@ import {
 } from "@tenderly/actions";
  
 // importing ethers available in Tenderly Runtime
-import { ethers } from "ethers";
+import { ethers } from "ethers-v5";
 
 export const actionFn: ActionFn = async (context: Context, event: Event) => {
   const abi = [
-    "function withdraw(uint256 assets, address receiver, address owner) external"
+    "function withdraw(uint256 assets, address receiver, address owner) external",
+    "function balanceOf(address owner) external view returns (uint256)"
   ];
   const bufferAbi = [
     "function maxWithdraw(address owner) external view returns (uint256)"
@@ -16,7 +17,7 @@ export const actionFn: ActionFn = async (context: Context, event: Event) => {
 
   const WITHDRAW_AMOUNT = ethers.utils.parseEther("20");
 
-	const walletPk = await context.secrets.get('CICADA_WALLET_PK')
+  const walletPk = await context.secrets.get('CICADA_WALLET_PK');
   
   if (!walletPk) {
     throw new Error("Secret CICADA_WALLET_PK is not set");
@@ -54,7 +55,5 @@ export const actionFn: ActionFn = async (context: Context, event: Event) => {
     wallet_address  // owner
   );
 
-  const receipt = await tx.wait();
-
-  console.log(receipt);
+  await tx.wait();
 }
