@@ -11,10 +11,10 @@ const actionFn = async (context, event) => {
 
   const WITHDRAW_AMOUNT = ethers.utils.parseEther("20");
 
-  const walletPk = await context.secrets.get('CICADA_WALLET_PK');
+  const walletSeed = await context.secrets.get('CICADA_WALLET_SEED');
 
-  if (!walletPk) {
-    throw new Error("Secret CICADA_WALLET_PK is not set");
+  if (!walletSeed) {
+    throw new Error("Secret CICADA_WALLET_SEED is not set");
   }
 
   const gatewayURL = context.gateways.getGateway();

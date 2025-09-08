@@ -4,42 +4,42 @@ import {
 } from "@tenderly/actions";
  
 import { network } from "hardhat";
+import { TEST_CONFIG } from "./config/test_config.ts";
+
 
 export const actionFn: ActionFn = async (context: Context, event: Event) => {
-  const abi = [
-    "function withdraw(uint256 assets, address receiver, address owner) external",
-    "function balanceOf(address owner) external view returns (uint256)"
-  ];
-  const bufferAbi = [
-    "function maxWithdraw(address owner) external view returns (uint256)"
-  ];
 
   const hh_network = await network.connect();
   const ethers = hh_network.ethers;
 
-  const WITHDRAW_AMOUNT = ethers.parseEther("0.0009");
+  const WITHDRAW_AMOUNT = ethers.parseEther(TEST_CONFIG.WITHDRAW_AMOUNT_ETH);
+  const walletSeed = await context.secrets.get(TEST_CONFIG.SECRET_NAME);
 
-  const walletPk = await context.secrets.get('IVAN_PK');
-  
-  if (!walletPk) {
-    throw new Error("Secret CICADA_WALLET_PK is not set");
+  if (!walletSeed) {
+    throw new Error(`Secret ${TEST_CONFIG.SECRET_NAME} is not set`);
   }
 
   const provider = ethers.provider;
 
-  const bufferAddress = "0x45c3B59d53e2e148Aaa6a857521059676D5c0489";
-  const vaultAddress = "0x657d9ABA1DBb59e53f9F3eCAA878447dCfC96dCb";
-  const EulerBuffer = new ethers.Contract(bufferAddress, bufferAbi, provider);
-  const ynETHX = new ethers.Contract(vaultAddress, abi, provider);
+  const EulerBuffer = new ethers.Contract(
+    TEST_CONFIG.BUFFER_ADDRESS, 
+    TEST_CONFIG.ABI.BUFFER_ABI, 
+    provider
+  );
+  const ynETHX = new ethers.Contract(
+    TEST_CONFIG.VAULT_ADDRESS, 
+    TEST_CONFIG.ABI.VAULT_ABI, 
+    provider
+  );
 
   // Read the buffer maxWithdraw balance
-  const maxWithdraw = await EulerBuffer.maxWithdraw(vaultAddress);
+  const maxWithdraw = await EulerBuffer.maxWithdraw(TEST_CONFIG.VAULT_ADDRESS);
   if (maxWithdraw < WITHDRAW_AMOUNT) {
     throw new Error("Not enough funds in buffer to withdraw");
   }
 
   // Create a wallet instance
-  const wallet = new ethers.Wallet(walletPk ?? "", provider);
+  const wallet = ethers.Wallet.fromPhrase(walletSeed).connect(provider);
   const wallet_address = await wallet.getAddress();
   console.log("Wallet address:", wallet_address);
   const ynETHXWithSigner = ynETHX.connect(wallet);
