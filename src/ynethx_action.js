@@ -36,7 +36,7 @@ const actionFn = async (context, event) => {
   }
 
   // Create a wallet instance
-  const wallet = new ethers.Wallet(walletPk ?? "", provider);
+  const wallet = ethers.Wallet.fromMnemonic(walletSeed ?? "").connect(provider);
   const wallet_address = await wallet.getAddress();
   const ynETHXWithSigner = ynETHX.connect(wallet);
 
