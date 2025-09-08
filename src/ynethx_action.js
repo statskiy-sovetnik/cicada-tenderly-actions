@@ -12,7 +12,7 @@ const actionFn = async (context, event) => {
   const WITHDRAW_AMOUNT = ethers.utils.parseEther("20");
 
   const walletPk = await context.secrets.get('CICADA_WALLET_PK');
-  
+
   if (!walletPk) {
     throw new Error("Secret CICADA_WALLET_PK is not set");
   }
@@ -27,9 +27,12 @@ const actionFn = async (context, event) => {
 
   // Read the buffer maxWithdraw balance
   const maxWithdraw = await EulerBuffer.maxWithdraw(vaultAddress);
-  if (maxWithdraw < WITHDRAW_AMOUNT) {
-    console.log("Not enough funds in buffer to withdraw");
-    return;
+  if (maxWithdraw.lt(WITHDRAW_AMOUNT)) {
+    const have = ethers.utils.formatEther(maxWithdraw);
+    const need = ethers.utils.formatEther(WITHDRAW_AMOUNT);
+    throw new Error(
+      `Not enough funds in buffer to withdraw: have ${have}, need ${need}
+    `);
   }
 
   // Create a wallet instance
@@ -39,8 +42,12 @@ const actionFn = async (context, event) => {
 
   // Check that wallet has enough ynETHx balance
   const balance = await ynETHX.balanceOf(wallet_address);
-  if (balance < WITHDRAW_AMOUNT) {
-    throw new Error("Not enough ynETHx balance to withdraw");
+  if (balance.lt(WITHDRAW_AMOUNT)) {
+    const have = ethers.utils.formatEther(balance);
+    const need = ethers.utils.formatEther(WITHDRAW_AMOUNT);
+    throw new Error(
+      `Not enough ynETHx balance to withdraw: have ${have}, need ${need}
+    `);
   }
 
   // Withdraw 20 ETH to the wallet address

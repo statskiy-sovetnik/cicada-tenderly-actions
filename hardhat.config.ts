@@ -10,7 +10,7 @@ const config: HardhatUserConfig = {
       chainType: "l1",
       forking: {
         url: configVariable("MAINNET_RPC_URL"),
-        blockNumber: 23309842
+        blockNumber: 23317342
       },
     },
     mainnet: {
